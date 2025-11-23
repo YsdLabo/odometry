@@ -11,11 +11,6 @@ public:
     OdometryCalculator()
       : Node("odometry_node"), first_time_(true)
     {
-        
-//    }
-    
-//    void run()
-//    {
         get_remote_parameter_with_wait<double>("diff_robot_node", "wheel_radius", wheel_radius_, std::chrono::seconds(10));
         get_remote_parameter_with_wait<double>("diff_robot_node", "wheel_separation", wheel_separation_, std::chrono::seconds(10));
     
