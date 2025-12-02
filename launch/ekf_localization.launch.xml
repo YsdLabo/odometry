@@ -1,0 +1,20 @@
+<?xml version="1.0"?>
+<launch>
+  <include file="$(find-pkg-share odometry)/launch/odometry.launch.xml" />
+
+  <node pkg="robot_localization" exec="ekf_node">
+    <param from="$(find-pkg-share odometry)/params/ekf.yaml" />
+    <param name="odom0" value="/odom" />
+    <param name="imu0" value="/imu" />
+    <!--remap from="/odom" to="/wheel_odom" /-->
+    <!--remap from="/imu/data" to="/imu" /-->
+  </node>
+
+  <!--node pkg="tf2_ros" exec="static_transform_publisher" args="0 0 0 0 0 0 map odom" />
+  <node pkg="tf2_ros" exec="static_transform_publisher" args="0 0 0 0 0 0 map wheel_odom" /-->
+  <!--node pkg="tf2_ros" exec="static_transform_publisher" args="0 0 0 0 0 0 odom ekf_odom" /-->
+  <!--node pkg="tf2_ros" exec="static_transform_publisher" args="0 0 0 0 0 1.570796 base_link_ekf imu_link" /-->
+  <!--node pkg="tf2_ros" exec="static_transform_publisher" args="-0.1 -0.06 0.213 0 0 1.570796 base_footprint imu_link" /-->
+
+  <node pkg="rviz2" exec="rviz2" args="-f odom -d $(find-pkg-share odometry)/rviz/ekf.rviz" />
+</launch>

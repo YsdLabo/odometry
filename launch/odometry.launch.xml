@@ -1,4 +1,8 @@
 <?xml version="1.0"?>
 <launch>
-  <node pkg="odometry" exec="odometry_node"/>
+  <node pkg="odometry" exec="odometry_node">
+    <param name="odom_frame_id" value="odom" />
+    <param name="child_frame_id" value="base_footprint" />
+    <param name="publish_tf" value="false" />
+  </node>
 </launch>

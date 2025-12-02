@@ -11,6 +11,16 @@ public:
     OdometryCalculator()
       : Node("odometry_node"), first_time_(true)
     {
+        this->declare_parameter<std::string>("odom_frame_id", "odom");
+        this->declare_parameter<std::string>("child_frame_id", "base_link");
+        this->declare_parameter<bool>("publish_tf", true);
+        
+        odom_frame_id_ = this->get_parameter("odom_frame_id").as_string();
+        child_frame_id_ = this->get_parameter("child_frame_id").as_string();
+        publish_tf_ = this->get_parameter("publish_tf").as_bool();
+        RCLCPP_INFO(this->get_logger(), "get_parameter: odom_frame_id = %s", odom_frame_id_.c_str());
+        RCLCPP_INFO(this->get_logger(), "get_parameter: child_frame_id = %s", child_frame_id_.c_str());
+
         get_remote_parameter_with_wait<double>("diff_robot_node", "wheel_radius", wheel_radius_, std::chrono::seconds(10));
         get_remote_parameter_with_wait<double>("diff_robot_node", "wheel_separation", wheel_separation_, std::chrono::seconds(10));
     
@@ -27,8 +37,8 @@ public:
         
         tf_broadcaster_ = std::make_unique<tf2_ros::TransformBroadcaster>(this);
         
-        RCLCPP_INFO(this->get_logger(), "get_parameter : wheel_radius = %f", wheel_radius_);
-        RCLCPP_INFO(this->get_logger(), "get_parameter : wheel_separation = %f", wheel_separation_);
+        RCLCPP_INFO(this->get_logger(), "get_parameter : wheel_radius = %.3f", wheel_radius_);
+        RCLCPP_INFO(this->get_logger(), "get_parameter : wheel_separation = %.3f", wheel_separation_);
         RCLCPP_INFO(this->get_logger(), "OdomCalculator Node Initialized.");
     }
 private:
@@ -46,6 +56,10 @@ private:
     double last_pos_right_;
     double last_pos_left_;
     
+    // Parameter
+    std::string odom_frame_id_;
+    std::string child_frame_id_;
+    bool publish_tf_;
     double wheel_radius_;
     double wheel_separation_;
 
@@ -70,7 +84,7 @@ private:
         odometry_update();
 
         publish_odom();
-        publish_tf();
+        if(publish_tf_ == true) publish_tf();
     }
     
     void odometry_update()
@@ -144,8 +158,8 @@ private:
     {
         auto odom = nav_msgs::msg::Odometry();
         odom.header.stamp = cur_time_;
-        odom.header.frame_id = "odom";
-        odom.child_frame_id = "base_footprint";
+        odom.header.frame_id = odom_frame_id_;
+        odom.child_frame_id = child_frame_id_;
         
         odom.pose.pose.position.x = cur_x_;
         odom.pose.pose.position.y = cur_y_;
@@ -172,8 +186,8 @@ private:
     {
         geometry_msgs::msg::TransformStamped t;
         t.header.stamp = cur_time_;
-        t.header.frame_id = "odom";
-        t.child_frame_id = "base_footprint";
+        t.header.frame_id = odom_frame_id_;
+        t.child_frame_id = child_frame_id_;
         t.transform.translation.x = cur_x_;
         t.transform.translation.y = cur_y_;
         t.transform.rotation = tf2::toMsg(cur_q_);
